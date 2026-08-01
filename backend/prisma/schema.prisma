@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+model Donor {
+  id               Int      @id @default(autoincrement())
+  donorId          String   @unique
+  firstName        String
+  lastName         String
+  dob              DateTime
+  gender           String
+  bloodType        String
+  phone            String
+  email             String?
+  address          String?
+  city             String?
+  state            String?
+  weight           Float?
+  lastDonationDate DateTime?
+  status           String   @default("Active")
+  totalDonations   Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  donations Donation[]
+}
+
+model BloodInventory {
+  id             Int      @id @default(autoincrement())
+  batchId        String   @unique
+  bloodType      String
+  units          Int
+  collectionDate DateTime
+  expiryDate     DateTime
+  source         String
+  storageLocation String?
+  status         String   @default("Available")
+  createdAt      DateTime @default(now())
+}
+
+model BloodRequest {
+  id             Int      @id @default(autoincrement())
+  requestId      String   @unique
+  hospitalName   String
+  contactPerson  String?
+  contactNumber  String?
+  patientName    String?
+  bloodType      String
+  unitsRequired  Int
+  requiredByDate DateTime
+  priority       String   @default("Normal")
+  status         String   @default("Pending")
+  createdAt      DateTime @default(now())
+}
+
+model Donation {
+  id          Int      @id @default(autoincrement())
+  donationId  String   @unique
+  donorId     Int
+  bloodType   String
+  units       Int      @default(1)
+  donationDate DateTime
+  source      String
+  screeningResult String @default("Passed")
+  status      String   @default("Accepted")
+  createdAt   DateTime @default(now())
+
+  donor Donor @relation(fields: [donorId], references: [id])
+}

@@ -391,13 +391,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Batch ID</th><th>Blood Type</th><th>Units</th><th>Collection Date</th><th>Expiry Date</th><th>Source</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>
-            <tr><td>BT-20240182</td><td><span class="badge badge-red">A+</span></td><td>15</td><td>10 Apr 2026</td><td>24 Apr 2026</td><td>Camp #C-44</td><td><span class="badge badge-amber">Expiring Soon</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-            <tr><td>BT-20240179</td><td><span class="badge badge-red">O−</span></td><td>18</td><td>08 Apr 2026</td><td>22 May 2026</td><td>Direct Donation</td><td><span class="badge badge-green">Available</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-            <tr><td>BT-20240175</td><td><span class="badge badge-red">B+</span></td><td>30</td><td>05 Apr 2026</td><td>19 May 2026</td><td>Camp #C-43</td><td><span class="badge badge-green">Available</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-            <tr><td>BT-20240170</td><td><span class="badge badge-red">AB−</span></td><td>22</td><td>01 Apr 2026</td><td>15 May 2026</td><td>Direct Donation</td><td><span class="badge badge-green">Available</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-            <tr><td>BT-20240165</td><td><span class="badge badge-red">O+</span></td><td>85</td><td>28 Mar 2026</td><td>11 May 2026</td><td>Camp #C-42</td><td><span class="badge badge-blue">Partial</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-          </tbody>
+          <tbody id="inventoryTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -423,20 +417,20 @@
     <div class="card">
       <div class="card-title">Add Blood Units to Inventory</div>
       <div class="form-grid">
-        <div class="form-group"><label>Blood Type</label><select><option>-- Select Blood Type --</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select></div>
-        <div class="form-group"><label>Number of Units</label><input type="number" placeholder="e.g. 10" min="1"></div>
-        <div class="form-group"><label>Batch ID</label><input type="text" placeholder="Auto-generated" readonly style="background:var(--gray-50)"></div>
-        <div class="form-group"><label>Collection Date</label><input type="date"></div>
-        <div class="form-group"><label>Expiry Date</label><input type="date"></div>
-        <div class="form-group"><label>Source</label><select><option>Direct Donation</option><option>Blood Camp</option><option>Transfer from Hospital</option><option>Purchase</option></select></div>
-        <div class="form-group"><label>Donor ID (if applicable)</label><input type="text" placeholder="e.g. D-10042"></div>
-        <div class="form-group"><label>Camp ID (if applicable)</label><input type="text" placeholder="e.g. C-44"></div>
-        <div class="form-group"><label>Storage Location</label><input type="text" placeholder="e.g. Refrigerator Unit 3, Shelf B"></div>
-        <div class="form-group"><label>Tested for</label><select><option>HIV, Hepatitis B, Hepatitis C, Malaria, Syphilis</option></select></div>
-        <div class="form-group full"><label>Remarks</label><textarea placeholder="Any additional notes..."></textarea></div>
+        <div class="form-group"><label>Blood Type</label><select id="invBloodType"><option>-- Select Blood Type --</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+<div class="form-group"><label>Number of Units</label><input type="number" id="invUnits" placeholder="e.g. 10" min="1"></div>
+<div class="form-group"><label>Batch ID</label><input type="text" placeholder="Auto-generated" readonly style="background:var(--gray-50)"></div>
+<div class="form-group"><label>Collection Date</label><input type="date" id="invCollectionDate"></div>
+<div class="form-group"><label>Expiry Date</label><input type="date" id="invExpiryDate"></div>
+<div class="form-group"><label>Source</label><select id="invSource"><option>Direct Donation</option><option>Blood Camp</option><option>Transfer from Hospital</option><option>Purchase</option></select></div>
+<div class="form-group"><label>Donor ID (if applicable)</label><input type="text" placeholder="e.g. D-10042"></div>
+<div class="form-group"><label>Camp ID (if applicable)</label><input type="text" placeholder="e.g. C-44"></div>
+<div class="form-group"><label>Storage Location</label><input type="text" id="invStorageLocation" placeholder="e.g. Refrigerator Unit 3, Shelf B"></div>
+<div class="form-group"><label>Tested for</label><select><option>HIV, Hepatitis B, Hepatitis C, Malaria, Syphilis</option></select></div>
+<div class="form-group full"><label>Remarks</label><textarea placeholder="Any additional notes..."></textarea></div>
       </div>
       <div style="margin-top:20px;display:flex;gap:10px">
-        <button class="btn btn-primary" onclick="toast('Blood units added to inventory successfully!')">Add to Inventory</button>
+        <button class="btn btn-primary" onclick="addInventory()">Add to Inventory</button>
         <button class="btn btn-gray">Reset Form</button>
       </div>
     </div>
@@ -463,14 +457,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr><th>Donor ID</th><th>Name</th><th>Age/Gender</th><th>Blood Type</th><th>Phone</th><th>Last Donated</th><th>Total Donations</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr><td>D-10042</td><td><strong>Rahul Verma</strong></td><td>28 / M</td><td><span class="badge badge-red">A+</span></td><td>9876543210</td><td>19 Apr 2026</td><td>8</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-gray" onclick="showModal('donorDetailModal')">View</button> <button class="btn btn-sm btn-blue">Schedule</button></td></tr>
-          <tr><td>D-10041</td><td><strong>Priya Mehta</strong></td><td>32 / F</td><td><span class="badge badge-red">O+</span></td><td>9812345678</td><td>15 Mar 2026</td><td>12</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-gray">View</button> <button class="btn btn-sm btn-blue">Schedule</button></td></tr>
-          <tr><td>D-10040</td><td><strong>Amit Singh</strong></td><td>45 / M</td><td><span class="badge badge-red">B+</span></td><td>9988776655</td><td>01 Feb 2026</td><td>22</td><td><span class="badge badge-amber">Deferred</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>D-10039</td><td><strong>Sunita Rao</strong></td><td>27 / F</td><td><span class="badge badge-red">AB−</span></td><td>9765432100</td><td>10 Jan 2026</td><td>5</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-gray">View</button> <button class="btn btn-sm btn-blue">Schedule</button></td></tr>
-          <tr><td>D-10038</td><td><strong>Vikram Joshi</strong></td><td>38 / M</td><td><span class="badge badge-red">O−</span></td><td>9812398765</td><td>05 Dec 2025</td><td>15</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-gray">View</button> <button class="btn btn-sm btn-blue">Schedule</button></td></tr>
-          <tr><td>D-10037</td><td><strong>Kavita Sharma</strong></td><td>30 / F</td><td><span class="badge badge-red">A−</span></td><td>9898989898</td><td>20 Nov 2025</td><td>3</td><td><span class="badge badge-gray">Inactive</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-        </tbody>
+        <tbody id="donorsTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -496,14 +483,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr><th>Request ID</th><th>Hospital / Patient</th><th>Blood Type</th><th>Units</th><th>Required By</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr><td>R-2843</td><td><strong>City Hospital</strong><br><small style="color:var(--gray-400)">Patient: Suresh Kumar</small></td><td><span class="badge badge-red">O−</span></td><td>4</td><td>20 Apr 2026</td><td><span class="badge badge-red">Urgent</span></td><td><span class="badge badge-amber">Pending</span></td><td><button class="btn btn-sm btn-green">Approve</button> <button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>R-2842</td><td><strong>AIIMS</strong><br><small style="color:var(--gray-400)">Surgery Unit</small></td><td><span class="badge badge-red">B+</span></td><td>6</td><td>22 Apr 2026</td><td><span class="badge badge-red">Urgent</span></td><td><span class="badge badge-amber">Pending</span></td><td><button class="btn btn-sm btn-green">Approve</button> <button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>R-2841</td><td><strong>Fortis Hospital</strong><br><small style="color:var(--gray-400)">General</small></td><td><span class="badge badge-red">B+</span></td><td>2</td><td>19 Apr 2026</td><td><span class="badge badge-blue">Normal</span></td><td><span class="badge badge-green">Fulfilled</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>R-2840</td><td><strong>Apollo Hospital</strong></td><td><span class="badge badge-red">A+</span></td><td>10</td><td>18 Apr 2026</td><td><span class="badge badge-blue">Normal</span></td><td><span class="badge badge-green">Fulfilled</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>R-2839</td><td><strong>Max Healthcare</strong></td><td><span class="badge badge-red">AB+</span></td><td>3</td><td>25 Apr 2026</td><td><span class="badge badge-gray">Scheduled</span></td><td><span class="badge badge-blue">Approved</span></td><td><button class="btn btn-sm btn-primary">Dispatch</button> <button class="btn btn-sm btn-gray">View</button></td></tr>
-          <tr><td>R-2838</td><td><strong>Safdarjung Hospital</strong></td><td><span class="badge badge-red">O+</span></td><td>5</td><td>17 Apr 2026</td><td><span class="badge badge-blue">Normal</span></td><td><span class="badge badge-green">Fulfilled</span></td><td><button class="btn btn-sm btn-gray">View</button></td></tr>
-        </tbody>
+        <tbody id="requestsTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -535,13 +515,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr><th>Donation ID</th><th>Donor</th><th>Blood Type</th><th>Units</th><th>Date</th><th>Source</th><th>Screening</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>DON-5581</td><td><strong>Rahul Verma</strong> (D-10042)</td><td><span class="badge badge-red">A+</span></td><td>1</td><td>19 Apr 2026</td><td>Direct</td><td><span class="badge badge-green">Passed</span></td><td><span class="badge badge-green">Accepted</span></td></tr>
-          <tr><td>DON-5580</td><td><strong>Mohit Gupta</strong> (D-10035)</td><td><span class="badge badge-red">O+</span></td><td>1</td><td>18 Apr 2026</td><td>Camp #C-44</td><td><span class="badge badge-green">Passed</span></td><td><span class="badge badge-green">Accepted</span></td></tr>
-          <tr><td>DON-5579</td><td><strong>Neha Agarwal</strong> (D-10031)</td><td><span class="badge badge-red">B−</span></td><td>1</td><td>17 Apr 2026</td><td>Direct</td><td><span class="badge badge-red">Failed</span></td><td><span class="badge badge-red">Rejected</span></td></tr>
-          <tr><td>DON-5578</td><td><strong>Sanjay Patel</strong> (D-10029)</td><td><span class="badge badge-red">AB+</span></td><td>1</td><td>16 Apr 2026</td><td>Camp #C-44</td><td><span class="badge badge-green">Passed</span></td><td><span class="badge badge-green">Accepted</span></td></tr>
-          <tr><td>DON-5577</td><td><strong>Ritu Saxena</strong> (D-10028)</td><td><span class="badge badge-red">O−</span></td><td>1</td><td>16 Apr 2026</td><td>Direct</td><td><span class="badge badge-green">Passed</span></td><td><span class="badge badge-green">Accepted</span></td></tr>
-        </tbody>
+        <tbody id="donationsTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -611,25 +585,25 @@
     <div class="modal-header"><h3>Register New Donor</h3><button class="modal-close" onclick="closeModal('addDonorModal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>First Name</label><input type="text" placeholder="First name"></div>
-        <div class="form-group"><label>Last Name</label><input type="text" placeholder="Last name"></div>
-        <div class="form-group"><label>Date of Birth</label><input type="date"></div>
-        <div class="form-group"><label>Gender</label><select><option>Male</option><option>Female</option><option>Other</option></select></div>
-        <div class="form-group"><label>Blood Type</label><select><option>-- Select --</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select></div>
-        <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="10-digit mobile number"></div>
-        <div class="form-group"><label>Email</label><input type="email" placeholder="email@example.com"></div>
-        <div class="form-group"><label>Aadhar / ID Number</label><input type="text" placeholder="12-digit Aadhar"></div>
-        <div class="form-group full"><label>Address</label><input type="text" placeholder="Full address"></div>
-        <div class="form-group"><label>City</label><input type="text" placeholder="City"></div>
-        <div class="form-group"><label>State</label><input type="text" placeholder="State"></div>
-        <div class="form-group"><label>Weight (kg)</label><input type="number" placeholder="Min 50 kg"></div>
-        <div class="form-group"><label>Last Donation Date</label><input type="date"></div>
-        <div class="form-group full"><label>Medical Conditions / Remarks</label><textarea placeholder="Any medical conditions, medications, or remarks..."></textarea></div>
-      </div>
-    </div>
+  <div class="form-group"><label>First Name</label><input type="text" id="donorFirstName" placeholder="First name"></div>
+  <div class="form-group"><label>Last Name</label><input type="text" id="donorLastName" placeholder="Last name"></div>
+  <div class="form-group"><label>Date of Birth</label><input type="date" id="donorDob"></div>
+  <div class="form-group"><label>Gender</label><select id="donorGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+  <div class="form-group"><label>Blood Type</label><select id="donorBloodType"><option>-- Select --</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+  <div class="form-group"><label>Phone Number</label><input type="tel" id="donorPhone" placeholder="10-digit mobile number"></div>
+  <div class="form-group"><label>Email</label><input type="email" id="donorEmail" placeholder="email@example.com"></div>
+  <div class="form-group"><label>Aadhar / ID Number</label><input type="text" placeholder="12-digit Aadhar"></div>
+  <div class="form-group full"><label>Address</label><input type="text" id="donorAddress" placeholder="Full address"></div>
+  <div class="form-group"><label>City</label><input type="text" id="donorCity" placeholder="City"></div>
+  <div class="form-group"><label>State</label><input type="text" id="donorState" placeholder="State"></div>
+  <div class="form-group"><label>Weight (kg)</label><input type="number" id="donorWeight" placeholder="Min 50 kg"></div>
+  <div class="form-group"><label>Last Donation Date</label><input type="date" id="donorLastDonation"></div>
+  <div class="form-group full"><label>Medical Conditions / Remarks</label><textarea placeholder="Any medical conditions, medications, or remarks..."></textarea></div>
+</div>
+</div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeModal('addDonorModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="closeModal('addDonorModal');toast('Donor registered successfully! ID: D-10043')">Register Donor</button>
+      <button class="btn btn-primary" onclick="registerDonor()">Register Donor</button>
     </div>
   </div>
 </div>
@@ -685,20 +659,20 @@
     <div class="modal-header"><h3>New Blood Request</h3><button class="modal-close" onclick="closeModal('addRequestModal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Hospital / Institution Name</label><input type="text" placeholder="Hospital name"></div>
-        <div class="form-group"><label>Contact Person</label><input type="text" placeholder="Doctor / Admin name"></div>
-        <div class="form-group"><label>Contact Number</label><input type="tel" placeholder="Phone number"></div>
-        <div class="form-group"><label>Patient Name (if known)</label><input type="text" placeholder="Patient name"></div>
-        <div class="form-group"><label>Blood Type Required</label><select><option>-- Select --</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select></div>
-        <div class="form-group"><label>Units Required</label><input type="number" placeholder="Number of units" min="1"></div>
-        <div class="form-group"><label>Required By Date</label><input type="date"></div>
-        <div class="form-group"><label>Priority</label><select><option>Normal</option><option>Urgent</option><option>Scheduled</option></select></div>
-        <div class="form-group full"><label>Purpose / Clinical Notes</label><textarea placeholder="Surgery, accident, medical condition, etc."></textarea></div>
-      </div>
+  <div class="form-group"><label>Hospital / Institution Name</label><input type="text" id="reqHospitalName" placeholder="Hospital name"></div>
+  <div class="form-group"><label>Contact Person</label><input type="text" id="reqContactPerson" placeholder="Doctor / Admin name"></div>
+  <div class="form-group"><label>Contact Number</label><input type="tel" id="reqContactNumber" placeholder="Phone number"></div>
+  <div class="form-group"><label>Patient Name (if known)</label><input type="text" id="reqPatientName" placeholder="Patient name"></div>
+  <div class="form-group"><label>Blood Type Required</label><select id="reqBloodType"><option>-- Select --</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+  <div class="form-group"><label>Units Required</label><input type="number" id="reqUnits" placeholder="Number of units" min="1"></div>
+  <div class="form-group"><label>Required By Date</label><input type="date" id="reqRequiredBy"></div>
+  <div class="form-group"><label>Priority</label><select id="reqPriority"><option>Normal</option><option>Urgent</option><option>Scheduled</option></select></div>
+  <div class="form-group full"><label>Purpose / Clinical Notes</label><textarea placeholder="Surgery, accident, medical condition, etc."></textarea></div>
+</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeModal('addRequestModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="closeModal('addRequestModal');toast('Blood request R-2844 created and queued for review!')">Submit Request</button>
+      <button class="btn btn-primary" onclick="submitRequest()">Submit Request</button>
     </div>
   </div>
 </div>
@@ -709,26 +683,26 @@
     <div class="modal-header"><h3>Record Donation</h3><button class="modal-close" onclick="closeModal('addDonationModal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Donor ID</label><input type="text" placeholder="e.g. D-10042"></div>
-        <div class="form-group"><label>Donor Name</label><input type="text" placeholder="Auto-fills from ID"></div>
-        <div class="form-group"><label>Blood Type (confirmed)</label><select><option>-- Select --</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select></div>
-        <div class="form-group"><label>Units Donated</label><input type="number" value="1" min="1" max="2"></div>
-        <div class="form-group"><label>Donation Date</label><input type="date"></div>
-        <div class="form-group"><label>Source</label><select><option>Direct</option><option>Blood Camp</option><option>Apheresis</option></select></div>
-        <div class="form-group"><label>Camp ID (if applicable)</label><input type="text" placeholder="e.g. C-44"></div>
-        <div class="form-group"><label>Haemoglobin (g/dL)</label><input type="number" placeholder="Min 12.5" step="0.1"></div>
-        <div class="form-group"><label>BP (mmHg)</label><input type="text" placeholder="e.g. 120/80"></div>
-        <div class="form-group"><label>Pulse (bpm)</label><input type="number" placeholder="e.g. 72"></div>
-        <div class="form-group"><label>Screening Result</label><select><option>Passed</option><option>Failed — HIV</option><option>Failed — Hepatitis B</option><option>Failed — Hepatitis C</option><option>Failed — Other</option></select></div>
-        <div class="form-group"><label>Temperature (°C)</label><input type="number" placeholder="e.g. 36.8" step="0.1"></div>
-        <div class="form-group full"><label>Technician Remarks</label><textarea placeholder="Any special observations..."></textarea></div>
-      </div>
+  <div class="form-group"><label>Donor ID</label><input type="text" id="donDonorId" placeholder="e.g. D-10042"></div>
+  <div class="form-group"><label>Donor Name</label><input type="text" placeholder="Auto-fills from ID" readonly style="background:var(--gray-50)"></div>
+  <div class="form-group"><label>Blood Type (confirmed)</label><select id="donBloodType"><option>-- Select --</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+  <div class="form-group"><label>Units Donated</label><input type="number" id="donUnits" value="1" min="1" max="2"></div>
+  <div class="form-group"><label>Donation Date</label><input type="date" id="donDate"></div>
+  <div class="form-group"><label>Source</label><select id="donSource"><option>Direct</option><option>Blood Camp</option><option>Apheresis</option></select></div>
+  <div class="form-group"><label>Camp ID (if applicable)</label><input type="text" placeholder="e.g. C-44"></div>
+  <div class="form-group"><label>Haemoglobin (g/dL)</label><input type="number" placeholder="Min 12.5" step="0.1"></div>
+  <div class="form-group"><label>BP (mmHg)</label><input type="text" placeholder="e.g. 120/80"></div>
+  <div class="form-group"><label>Pulse (bpm)</label><input type="number" placeholder="e.g. 72"></div>
+  <div class="form-group"><label>Screening Result</label><select id="donScreening"><option>Passed</option><option>Failed</option></select></div>
+  <div class="form-group"><label>Temperature (°C)</label><input type="number" placeholder="e.g. 36.8" step="0.1"></div>
+  <div class="form-group full"><label>Technician Remarks</label><textarea placeholder="Any special observations..."></textarea></div>
+</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeModal('addDonationModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="closeModal('addDonationModal');toast('Donation DON-5582 recorded and added to inventory!')">Record Donation</button>
-    </div>
+      <button class="btn btn-primary" onclick="recordDonation()">Record Donation</button>
   </div>
+</div>
 </div>
 
 <!-- Report Preview Modal -->
@@ -784,11 +758,361 @@
 <div id="toast" style="position:fixed;bottom:28px;right:28px;background:var(--gray-800);color:white;padding:14px 22px;border-radius:10px;font-size:14px;box-shadow:var(--shadow-lg);display:none;z-index:999;max-width:360px;line-height:1.5"></div>
 
 <script>
-  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const API_BASE = "http://localhost:5000";
+  async function loadDonors() {
+  try {
+    const res = await fetch(`${API_BASE}/donors`);
+    const donors = await res.json();
+    const tbody = document.getElementById('donorsTableBody');
+    tbody.innerHTML = '';
 
+    if (donors.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:20px">No donors registered yet.</td></tr>';
+      return;
+    }
+
+    donors.forEach(d => {
+      const age = new Date().getFullYear() - new Date(d.dob).getFullYear();
+      const lastDonated = d.lastDonationDate
+        ? new Date(d.lastDonationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+        : '—';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${d.donorId}</td>
+        <td><strong>${d.firstName} ${d.lastName}</strong></td>
+        <td>${age} / ${d.gender.charAt(0)}</td>
+        <td><span class="badge badge-red">${d.bloodType}</span></td>
+        <td>${d.phone}</td>
+        <td>${lastDonated}</td>
+        <td>${d.totalDonations}</td>
+        <td><span class="badge badge-green">${d.status}</span></td>
+        <td><button class="btn btn-sm btn-gray">View</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load donors:', err);
+  }
+}
+async function loadInventory() {
+  try {
+    const res = await fetch(`${API_BASE}/inventory`);
+    const inventory = await res.json();
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = '';
+
+    if (inventory.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:20px">No inventory batches yet.</td></tr>';
+      return;
+    }
+
+    inventory.forEach(b => {
+      const collectionDate = new Date(b.collectionDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const expiryDate = new Date(b.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${b.batchId}</td>
+        <td><span class="badge badge-red">${b.bloodType}</span></td>
+        <td>${b.units}</td>
+        <td>${collectionDate}</td>
+        <td>${expiryDate}</td>
+        <td>${b.source}</td>
+        <td><span class="badge badge-green">${b.status}</span></td>
+        <td><button class="btn btn-sm btn-gray">View</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load inventory:', err);
+  }
+}
+async function loadRequests() {
+  try {
+    const res = await fetch(`${API_BASE}/requests`);
+    const requests = await res.json();
+    const tbody = document.getElementById('requestsTableBody');
+    tbody.innerHTML = '';
+
+    if (requests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:20px">No blood requests yet.</td></tr>';
+      return;
+    }
+
+    requests.forEach(r => {
+      const requiredBy = new Date(r.requiredByDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const priorityBadge = r.priority === 'Urgent' ? 'badge-red' : r.priority === 'Scheduled' ? 'badge-gray' : 'badge-blue';
+      const statusBadge = r.status === 'Fulfilled' ? 'badge-green' : r.status === 'Approved' ? 'badge-blue' : 'badge-amber';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${r.requestId}</td>
+        <td><strong>${r.hospitalName}</strong>${r.patientName ? `<br><small style="color:var(--gray-400)">Patient: ${r.patientName}</small>` : ''}</td>
+        <td><span class="badge badge-red">${r.bloodType}</span></td>
+        <td>${r.unitsRequired}</td>
+        <td>${requiredBy}</td>
+        <td><span class="badge ${priorityBadge}">${r.priority}</span></td>
+        <td><span class="badge ${statusBadge}">${r.status}</span></td>
+        <td>
+          ${r.status === 'Pending' ? `<button class="btn btn-sm btn-green" onclick="approveRequest(${r.id})">Approve</button>` : ''}
+          <button class="btn btn-sm btn-gray">View</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load requests:', err);
+  }
+}
+
+async function approveRequest(id) {
+  try {
+    await fetch(`${API_BASE}/requests/${id}/approve`, { method: 'PATCH' });
+    loadRequests();
+    toast('Request approved!');
+  } catch (err) {
+    console.error('Failed to approve request:', err);
+  }
+}
+async function loadDonations() {
+  try {
+    const res = await fetch(`${API_BASE}/donations`);
+    const donations = await res.json();
+    const tbody = document.getElementById('donationsTableBody');
+    tbody.innerHTML = '';
+
+    if (donations.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:20px">No donations recorded yet.</td></tr>';
+      return;
+    }
+
+    donations.forEach(d => {
+      const date = new Date(d.donationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const donorName = d.donor ? `${d.donor.firstName} ${d.donor.lastName}` : 'Unknown';
+      const donorId = d.donor ? d.donor.donorId : '';
+      const screeningBadge = d.screeningResult === 'Passed' ? 'badge-green' : 'badge-red';
+      const statusBadge = d.status === 'Accepted' ? 'badge-green' : 'badge-red';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${d.donationId}</td>
+        <td><strong>${donorName}</strong> (${donorId})</td>
+        <td><span class="badge badge-red">${d.bloodType}</span></td>
+        <td>${d.units}</td>
+        <td>${date}</td>
+        <td>${d.source}</td>
+        <td><span class="badge ${screeningBadge}">${d.screeningResult}</span></td>
+        <td><span class="badge ${statusBadge}">${d.status}</span></td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Failed to load donations:', err);
+  }
+}
+
+  async function registerDonor() {
+  const firstName = document.getElementById('donorFirstName').value.trim();
+  const lastName = document.getElementById('donorLastName').value.trim();
+  const dob = document.getElementById('donorDob').value;
+  const gender = document.getElementById('donorGender').value;
+  const bloodType = document.getElementById('donorBloodType').value;
+  const phone = document.getElementById('donorPhone').value.trim();
+  const email = document.getElementById('donorEmail').value.trim();
+  const address = document.getElementById('donorAddress').value.trim();
+  const city = document.getElementById('donorCity').value.trim();
+  const state = document.getElementById('donorState').value.trim();
+  const weight = document.getElementById('donorWeight').value;
+  const lastDonationDate = document.getElementById('donorLastDonation').value;
+
+  if (!firstName || !lastName || !dob || !bloodType || bloodType === '-- Select --' || !phone) {
+    toast('Please fill in First Name, Last Name, Date of Birth, Blood Type, and Phone.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/donors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName, lastName, dob, gender, bloodType, phone,
+        email: email || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        weight: weight || null,
+        lastDonationDate: lastDonationDate || null,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Server error');
+    const newDonor = await res.json();
+
+    closeModal('addDonorModal');
+    toast(`Donor registered successfully! ID: ${newDonor.donorId}`);
+    loadDonors();
+
+    document.getElementById('donorFirstName').value = '';
+    document.getElementById('donorLastName').value = '';
+    document.getElementById('donorDob').value = '';
+    document.getElementById('donorPhone').value = '';
+    document.getElementById('donorEmail').value = '';
+    document.getElementById('donorAddress').value = '';
+    document.getElementById('donorCity').value = '';
+    document.getElementById('donorState').value = '';
+    document.getElementById('donorWeight').value = '';
+    document.getElementById('donorLastDonation').value = '';
+  } catch (err) {
+    console.error('Failed to register donor:', err);
+    toast('Failed to register donor. Please try again.');
+  }
+}
+async function addInventory() {
+  const bloodType = document.getElementById('invBloodType').value;
+  const units = document.getElementById('invUnits').value;
+  const collectionDate = document.getElementById('invCollectionDate').value;
+  const expiryDate = document.getElementById('invExpiryDate').value;
+  const source = document.getElementById('invSource').value;
+  const storageLocation = document.getElementById('invStorageLocation').value.trim();
+
+  if (!bloodType || bloodType === '-- Select Blood Type --' || !units || !collectionDate || !expiryDate) {
+    toast('Please fill in Blood Type, Number of Units, Collection Date, and Expiry Date.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/inventory`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bloodType,
+        units,
+        collectionDate,
+        expiryDate,
+        source,
+        storageLocation: storageLocation || null,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Server error');
+    const newBatch = await res.json();
+
+    toast(`Blood units added successfully! Batch ID: ${newBatch.batchId}`);
+    loadInventory();
+
+    document.getElementById('invUnits').value = '';
+    document.getElementById('invCollectionDate').value = '';
+    document.getElementById('invExpiryDate').value = '';
+    document.getElementById('invStorageLocation').value = '';
+  } catch (err) {
+    console.error('Failed to add inventory:', err);
+    toast('Failed to add inventory. Please try again.');
+  }
+}
+
+
+async function submitRequest() {
+  const hospitalName = document.getElementById('reqHospitalName').value.trim();
+  const contactPerson = document.getElementById('reqContactPerson').value.trim();
+  const contactNumber = document.getElementById('reqContactNumber').value.trim();
+  const patientName = document.getElementById('reqPatientName').value.trim();
+  const bloodType = document.getElementById('reqBloodType').value;
+  const unitsRequired = document.getElementById('reqUnits').value;
+  const requiredByDate = document.getElementById('reqRequiredBy').value;
+  const priority = document.getElementById('reqPriority').value;
+
+  if (!hospitalName || !bloodType || bloodType === '-- Select --' || !unitsRequired || !requiredByDate) {
+    toast('Please fill in Hospital Name, Blood Type, Units Required, and Required By Date.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hospitalName, contactPerson, contactNumber, patientName,
+        bloodType, unitsRequired, requiredByDate, priority,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Server error');
+    const newRequest = await res.json();
+
+    closeModal('addRequestModal');
+    toast(`Blood request created! ID: ${newRequest.requestId}`);
+    loadRequests();
+
+    document.getElementById('reqHospitalName').value = '';
+    document.getElementById('reqContactPerson').value = '';
+    document.getElementById('reqContactNumber').value = '';
+    document.getElementById('reqPatientName').value = '';
+    document.getElementById('reqUnits').value = '';
+    document.getElementById('reqRequiredBy').value = '';
+  } catch (err) {
+    console.error('Failed to submit request:', err);
+    toast('Failed to submit request. Please try again.');
+  }
+}
+
+async function recordDonation() {
+  const donorIdInput = document.getElementById('donDonorId').value.trim();
+  const bloodType = document.getElementById('donBloodType').value;
+  const units = document.getElementById('donUnits').value;
+  const donationDate = document.getElementById('donDate').value;
+  const source = document.getElementById('donSource').value;
+  const screeningResult = document.getElementById('donScreening').value;
+
+  if (!donorIdInput || !bloodType || bloodType === '-- Select --' || !donationDate) {
+    toast('Please fill in Donor ID, Blood Type, and Donation Date.');
+    return;
+  }
+
+  try {
+    // Look up the donor's internal numeric ID from their public Donor ID (e.g. D-41285)
+    const donorsRes = await fetch(`${API_BASE}/donors`);
+    const donors = await donorsRes.json();
+    const matchedDonor = donors.find(d => d.donorId.toLowerCase() === donorIdInput.toLowerCase());
+
+    if (!matchedDonor) {
+      toast(`No donor found with ID ${donorIdInput}. Please check and try again.`);
+      return;
+    }
+
+    const res = await fetch(`${API_BASE}/donations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        donorId: matchedDonor.id,
+        bloodType, units, donationDate, source, screeningResult,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Server error');
+    const newDonation = await res.json();
+
+    closeModal('addDonationModal');
+    toast(`Donation recorded! ID: ${newDonation.donationId}`);
+    loadDonations();
+
+    document.getElementById('donDonorId').value = '';
+    document.getElementById('donDate').value = '';
+  } catch (err) {
+    console.error('Failed to record donation:', err);
+    toast('Failed to record donation. Please try again.');
+  }
+}
+
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadDonors();
   function showPage(id, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
+    if (id === 'donors') loadDonors();
+    if (id === 'inventory') loadInventory();
+    if (id === 'requests') loadRequests();
+    if (id === 'donations') loadDonations();
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     if (el) el.classList.add('active');
     else {
