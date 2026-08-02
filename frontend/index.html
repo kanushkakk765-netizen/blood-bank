@@ -232,7 +232,7 @@
   <div class="stats-grid">
     <div class="stat-card red">
       <div class="stat-label">Total Blood Units</div>
-      <div class="stat-value">1,284</div>
+      <div class="stat-value" id="statTotalUnits">1,284</div>
       <div class="stat-trend">Units in stock &mdash; <span>↑ 42 this week</span></div>
     </div>
     <div class="stat-card blue">
@@ -242,12 +242,12 @@
     </div>
     <div class="stat-card green">
       <div class="stat-label">Donations This Month</div>
-      <div class="stat-value">248</div>
+      <div class="stat-value" id="statDonationsMonth">248</div>
       <div class="stat-trend">Successful donations &mdash; <span>↑ 12%</span></div>
     </div>
     <div class="stat-card amber">
       <div class="stat-label">Pending Requests</div>
-      <div class="stat-value">14</div>
+      <div class="stat-value" id="statPendingRequests">14</div>
       <div class="stat-trend">Awaiting fulfillment &mdash; <span style="color:var(--amber)">2 Urgent</span></div>
     </div>
   </div>
@@ -1110,6 +1110,35 @@ async function recordDonation() {
 
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadDonors();
+  loadDashboardStats();
+
+  async function loadDashboardStats() {
+    try {
+      const [invRes, reqRes, donRes] = await Promise.all([
+        fetch(`${API_BASE}/inventory`),
+        fetch(`${API_BASE}/requests`),
+        fetch(`${API_BASE}/donations`),
+      ]);
+      const inventory = await invRes.json();
+      const requests = await reqRes.json();
+      const donations = await donRes.json();
+
+      const totalUnits = inventory.reduce((sum, b) => sum + b.units, 0);
+      document.getElementById('statTotalUnits').textContent = totalUnits.toLocaleString();
+
+      const now = new Date();
+      const donationsThisMonth = donations.filter(d => {
+        const dDate = new Date(d.donationDate);
+        return dDate.getMonth() === now.getMonth() && dDate.getFullYear() === now.getFullYear();
+      }).length;
+      document.getElementById('statDonationsMonth').textContent = donationsThisMonth.toLocaleString();
+
+      const pendingRequests = requests.filter(r => r.status === 'Pending').length;
+      document.getElementById('statPendingRequests').textContent = pendingRequests.toLocaleString();
+    } catch (err) {
+      console.error('Failed to load dashboard stats:', err);
+    }
+  }
   function showPage(id, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
