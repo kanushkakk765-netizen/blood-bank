@@ -257,14 +257,14 @@
     <div class="card">
       <div class="card-title">Blood Stock Overview <button class="btn btn-primary btn-sm" onclick="showPage('inventory',null)">View All</button></div>
       <div class="blood-grid" style="gap:10px">
-        <div class="blood-item critical"><div class="blood-type">A+</div><div class="blood-units">38</div><div class="blood-status">Critical</div></div>
-        <div class="blood-item ok"><div class="blood-type">A−</div><div class="blood-units">72</div><div class="blood-status">Available</div></div>
-        <div class="blood-item low"><div class="blood-type">B+</div><div class="blood-units">55</div><div class="blood-status">Low</div></div>
-        <div class="blood-item ok"><div class="blood-type">B−</div><div class="blood-units">90</div><div class="blood-status">Available</div></div>
-        <div class="blood-item ok"><div class="blood-type">AB+</div><div class="blood-units">110</div><div class="blood-status">Available</div></div>
-        <div class="blood-item critical"><div class="blood-type">AB−</div><div class="blood-units">22</div><div class="blood-status">Critical</div></div>
-        <div class="blood-item ok"><div class="blood-type">O+</div><div class="blood-units">185</div><div class="blood-status">Available</div></div>
-        <div class="blood-item critical"><div class="blood-type">O−</div><div class="blood-units">18</div><div class="blood-status">Critical</div></div>
+        <div class="blood-item ok" id="stockCard-A+"><div class="blood-type">A+</div><div class="blood-units" id="stockUnits-A+">0</div><div class="blood-status" id="stockStatus-A+">Available</div></div>
+<div class="blood-item ok" id="stockCard-A-"><div class="blood-type">A−</div><div class="blood-units" id="stockUnits-A-">0</div><div class="blood-status" id="stockStatus-A-">Available</div></div>
+<div class="blood-item ok" id="stockCard-B+"><div class="blood-type">B+</div><div class="blood-units" id="stockUnits-B+">0</div><div class="blood-status" id="stockStatus-B+">Available</div></div>
+<div class="blood-item ok" id="stockCard-B-"><div class="blood-type">B−</div><div class="blood-units" id="stockUnits-B-">0</div><div class="blood-status" id="stockStatus-B-">Available</div></div>
+<div class="blood-item ok" id="stockCard-AB+"><div class="blood-type">AB+</div><div class="blood-units" id="stockUnits-AB+">0</div><div class="blood-status" id="stockStatus-AB+">Available</div></div>
+<div class="blood-item ok" id="stockCard-AB-"><div class="blood-type">AB−</div><div class="blood-units" id="stockUnits-AB-">0</div><div class="blood-status" id="stockStatus-AB-">Available</div></div>
+<div class="blood-item ok" id="stockCard-O+"><div class="blood-type">O+</div><div class="blood-units" id="stockUnits-O+">0</div><div class="blood-status" id="stockStatus-O+">Available</div></div>
+<div class="blood-item ok" id="stockCard-O-"><div class="blood-type">O−</div><div class="blood-units" id="stockUnits-O-">0</div><div class="blood-status" id="stockStatus-O-">Available</div></div>
       </div>
     </div>
 
@@ -1135,7 +1135,42 @@ async function recordDonation() {
 
       const pendingRequests = requests.filter(r => r.status === 'Pending').length;
       document.getElementById('statPendingRequests').textContent = pendingRequests.toLocaleString();
-    } catch (err) {
+      const thresholds = {
+        'A+': 50, 'A-': 30, 'B+': 50, 'B-': 30,
+        'AB+': 40, 'AB-': 20, 'O+': 60, 'O-': 40
+      };
+
+      const stockByType = {};
+      Object.keys(thresholds).forEach(type => stockByType[type] = 0);
+      inventory.forEach(b => {
+        if (stockByType.hasOwnProperty(b.bloodType)) {
+          stockByType[b.bloodType] += b.units;
+        }
+      });
+
+      Object.keys(thresholds).forEach(type => {
+        const units = stockByType[type];
+        const min = thresholds[type];
+        let status, cardClass;
+
+        if (units < min * 0.5) {
+          status = 'Critical'; cardClass = 'critical';
+        } else if (units < min) {
+          status = 'Low'; cardClass = 'low';
+        } else {
+          status = 'Available'; cardClass = 'ok';
+        }
+
+        const unitsEl = document.getElementById(`stockUnits-${type}`);
+        const statusEl = document.getElementById(`stockStatus-${type}`);
+        const cardEl = document.getElementById(`stockCard-${type}`);
+        if (unitsEl) unitsEl.textContent = units;
+        if (statusEl) statusEl.textContent = status;
+        if (cardEl) cardEl.className = `blood-item ${cardClass}`;
+      });
+    }
+
+     catch (err) {
       console.error('Failed to load dashboard stats:', err);
     }
   }
