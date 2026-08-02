@@ -237,7 +237,7 @@
     </div>
     <div class="stat-card blue">
       <div class="stat-label">Registered Donors</div>
-      <div class="stat-value">3,671</div>
+      <div class="stat-value" id="statRegisteredDonors">3,671</div>
       <div class="stat-trend">Active donors &mdash; <span>↑ 18 this month</span></div>
     </div>
     <div class="stat-card green">
@@ -453,7 +453,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Registered Donors <span style="font-size:14px;font-weight:400;color:var(--gray-400)">3,671 total</span></div>
+    <div class="card-title">Registered Donors <span style="font-size:14px;font-weight:400;color:var(--gray-400)"><span id="donorsTotalCount">3,671</span> total</span></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Donor ID</th><th>Name</th><th>Age/Gender</th><th>Blood Type</th><th>Phone</th><th>Last Donated</th><th>Total Donations</th><th>Status</th><th>Actions</th></tr></thead>
@@ -763,7 +763,11 @@
   try {
     const res = await fetch(`${API_BASE}/donors`);
     const donors = await res.json();
-    const tbody = document.getElementById('donorsTableBody');
+
+document.getElementById('statRegisteredDonors').textContent = donors.length.toLocaleString();
+document.getElementById('donorsTotalCount').textContent = donors.length.toLocaleString();
+
+const tbody = document.getElementById('donorsTableBody');
     tbody.innerHTML = '';
 
     if (donors.length === 0) {
