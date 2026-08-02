@@ -269,27 +269,11 @@
     </div>
 
     <!-- Alerts -->
-    <div class="card">
-      <div class="card-title">Alerts & Notifications</div>
-      <div class="notif danger">
-        <div class="notif-icon">🚨</div>
-        <div class="notif-text"><strong>Critical: O− stock below threshold</strong>Only 18 units remaining. Immediate donor outreach recommended.</div>
-      </div>
-      <div class="notif warning">
-        <div class="notif-icon">⚠️</div>
-        <div class="notif-text"><strong>Expiry Alert: 12 units expiring</strong>A+ blood expires within 5 days. Prioritize dispatch.</div>
-      </div>
-      <div class="notif warning">
-        <div class="notif-icon">⚠️</div>
-        <div class="notif-text"><strong>AB− stock running low</strong>22 units left. Schedule donation camp.</div>
-      </div>
-      <div class="notif info">
-        <div class="notif-icon">ℹ️</div>
-        <div class="notif-text"><strong>New request from City Hospital</strong>Requested 4 units of B+ for surgery on 22 Apr.</div>
-      </div>
-    </div>
-  </div>
-
+<div class="card">
+  <div class="card-title">Alerts & Notifications</div>
+  <div id="alertsContainer"></div>
+</div>
+ </div>
   <div class="dash-grid">
     <!-- Monthly Donations Chart -->
     <div class="card">
@@ -1168,6 +1152,58 @@ async function recordDonation() {
         if (statusEl) statusEl.textContent = status;
         if (cardEl) cardEl.className = `blood-item ${cardClass}`;
       });
+      const alerts = [];
+
+      Object.keys(thresholds).forEach(type => {
+        const units = stockByType[type];
+        const min = thresholds[type];
+        if (units < min * 0.5) {
+          alerts.push({
+            level: 'danger', icon: '🚨',
+            title: `Critical: ${type} stock below threshold`,
+            text: `Only ${units} units remaining. Immediate donor outreach recommended.`
+          });
+        } else if (units < min) {
+          alerts.push({
+            level: 'warning', icon: '⚠️',
+            title: `${type} stock running low`,
+            text: `${units} units left. Schedule donation camp.`
+          });
+        }
+      });
+
+      
+      inventory.forEach(b => {
+        const expiry = new Date(b.expiryDate);
+        const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+        if (daysLeft >= 0 && daysLeft <= 5) {
+          alerts.push({
+            level: 'warning', icon: '⚠️',
+            title: `Expiry Alert: ${b.units} units expiring`,
+            text: `${b.bloodType} blood (Batch ${b.batchId}) expires within ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Prioritize dispatch.`
+          });
+        }
+      });
+
+      requests.filter(r => r.status === 'Pending').forEach(r => {
+        alerts.push({
+          level: 'info', icon: 'ℹ️',
+          title: `New request from ${r.hospitalName}`,
+          text: `Requested ${r.unitsRequired} units of ${r.bloodType}${r.requiredByDate ? ' by ' + new Date(r.requiredByDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : ''}.`
+        });
+      });
+
+      const alertsContainer = document.getElementById('alertsContainer');
+      if (alerts.length === 0) {
+        alertsContainer.innerHTML = '<div style="text-align:center;color:var(--gray-400);padding:20px">No active alerts. Everything looks good.</div>';
+      } else {
+        alertsContainer.innerHTML = alerts.map(a => `
+          <div class="notif ${a.level}">
+            <div class="notif-icon">${a.icon}</div>
+            <div class="notif-text"><strong>${a.title}</strong>${a.text}</div>
+          </div>
+        `).join('');
+      }
     }
 
      catch (err) {
