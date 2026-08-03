@@ -276,24 +276,11 @@
  </div>
   <div class="dash-grid">
     <!-- Monthly Donations Chart -->
-    <div class="card">
-      <div class="card-title">Monthly Donations (2025–26)</div>
-      <div class="bar-chart">
-        <div class="bar-col"><div class="bar filled" style="height:70%"></div><div class="bar-label">May</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:55%"></div><div class="bar-label">Jun</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:80%"></div><div class="bar-label">Jul</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:45%"></div><div class="bar-label">Aug</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:65%"></div><div class="bar-label">Sep</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:90%"></div><div class="bar-label">Oct</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:75%"></div><div class="bar-label">Nov</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:60%"></div><div class="bar-label">Dec</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:85%"></div><div class="bar-label">Jan</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:95%"></div><div class="bar-label">Feb</div></div>
-        <div class="bar-col"><div class="bar filled" style="height:78%"></div><div class="bar-label">Mar</div></div>
-        <div class="bar-col"><div class="bar" style="height:40%;border-color:var(--red);border-style:dashed;"></div><div class="bar-label">Apr</div></div>
-      </div>
-      <div style="margin-top:10px;font-size:12px;color:var(--gray-400)">Dashed = current month (partial data)</div>
-    </div>
+<div class="card">
+  <div class="card-title" id="monthlyChartTitle">Monthly Donations</div>
+  <div class="bar-chart" id="monthlyChart"></div>
+  <div style="margin-top:10px;font-size:12px;color:var(--gray-400)">Dashed = current month (partial data)</div>
+</div>
 
     <!-- Recent Activity -->
     <div class="card">
@@ -1209,7 +1196,39 @@ async function recordDonation() {
           </div>
         `).join('');
       }
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({ year: d.getFullYear(), month: d.getMonth(), label: monthNames[d.getMonth()] });
+      }
+
+      const monthCounts = months.map(m => {
+        return donations.filter(d => {
+          const dDate = new Date(d.donationDate);
+          return dDate.getFullYear() === m.year && dDate.getMonth() === m.month;
+        }).length;
+      });
+
+      const maxCount = Math.max(...monthCounts, 1);
+      const chartEl = document.getElementById('monthlyChart');
+      chartEl.innerHTML = months.map((m, i) => {
+        const isCurrent = i === months.length - 1;
+        const heightPct = Math.max((monthCounts[i] / maxCount) * 100, 4);
+        const barClass = isCurrent ? 'bar' : 'bar filled';
+        const barStyle = isCurrent
+          ? `height:${heightPct}%;border-color:var(--red);border-style:dashed;`
+          : `height:${heightPct}%`;
+        return `<div class="bar-col"><div class="${barClass}" style="${barStyle}"></div><div class="bar-label">${m.label}</div></div>`;
+      }).join('');
+
+      const startYear = months[0].year;
+      const endYear = months[months.length - 1].year;
+      document.getElementById('monthlyChartTitle').textContent = startYear === endYear
+        ? `Monthly Donations (${startYear})`
+        : `Monthly Donations (${startYear}–${String(endYear).slice(2)})`;
     }
+    
 
      catch (err) {
       console.error('Failed to load dashboard stats:', err);
