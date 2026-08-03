@@ -224,9 +224,9 @@
       <p>LifeLine Blood Bank &mdash; City Medical Center &bull; Today: <span id="todayDate"></span></p>
     </div>
     <div class="hero-urgency">
-      <div class="urgency-chip">🩸 3 Critical Low Stocks</div>
-      <div class="urgency-chip">⚡ 2 Urgent Requests Pending</div>
-    </div>
+  <div class="urgency-chip">🩸 <span id="heroCriticalCount">0</span> Critical Low Stocks</div>
+  <div class="urgency-chip">⚡ <span id="heroUrgentRequests">0</span> Urgent Requests Pending</div>
+</div>
   </div>
 
   <div class="stats-grid">
@@ -1152,6 +1152,11 @@ async function recordDonation() {
         if (statusEl) statusEl.textContent = status;
         if (cardEl) cardEl.className = `blood-item ${cardClass}`;
       });
+      const criticalCount = Object.keys(thresholds).filter(type => stockByType[type] < thresholds[type] * 0.5).length;
+      document.getElementById('heroCriticalCount').textContent = criticalCount;
+
+      const urgentRequests = requests.filter(r => r.status === 'Pending' && r.priority === 'Urgent').length;
+      document.getElementById('heroUrgentRequests').textContent = urgentRequests;
       const alerts = [];
 
       Object.keys(thresholds).forEach(type => {
