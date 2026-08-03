@@ -282,17 +282,12 @@
   <div style="margin-top:10px;font-size:12px;color:var(--gray-400)">Dashed = current month (partial data)</div>
 </div>
 
-    <!-- Recent Activity -->
-    <div class="card">
-      <div class="card-title">Recent Activity</div>
-      <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-text">Rahul Verma donated 1 unit of A+ blood</div><div class="activity-time">Today, 10:42 AM</div></div></div>
-      <div class="activity-item"><div class="activity-dot blue"></div><div><div class="activity-text">Request #R-2841 fulfilled for Fortis Hospital (B+)</div><div class="activity-time">Today, 09:15 AM</div></div></div>
-      <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-text">O− stock alert triggered &mdash; 18 units remaining</div><div class="activity-time">Yesterday, 11:30 PM</div></div></div>
-      <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-text">Priya Mehta registered as new donor (O+)</div><div class="activity-time">Yesterday, 04:20 PM</div></div></div>
-      <div class="activity-item"><div class="activity-dot blue"></div><div><div class="activity-text">30 units dispatched to Apollo Hospital</div><div class="activity-time">18 Apr, 02:00 PM</div></div></div>
-      <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-text">Expiry warning: 12 A+ units expire by 24 Apr</div><div class="activity-time">18 Apr, 09:00 AM</div></div></div>
-    </div>
-  </div>
+   <!-- Recent Activity -->
+<div class="card">
+  <div class="card-title">Recent Activity</div>
+  <div id="recentActivityContainer"></div>
+</div>
+</div>
 </div>
 
 <!-- =================== BLOOD INVENTORY =================== -->
@@ -1085,14 +1080,16 @@ async function recordDonation() {
 
   async function loadDashboardStats() {
     try {
-      const [invRes, reqRes, donRes] = await Promise.all([
-        fetch(`${API_BASE}/inventory`),
-        fetch(`${API_BASE}/requests`),
-        fetch(`${API_BASE}/donations`),
-      ]);
-      const inventory = await invRes.json();
-      const requests = await reqRes.json();
-      const donations = await donRes.json();
+      const [invRes, reqRes, donRes, donorsRes] = await Promise.all([
+  fetch(`${API_BASE}/inventory`),
+  fetch(`${API_BASE}/requests`),
+  fetch(`${API_BASE}/donations`),
+  fetch(`${API_BASE}/donors`),
+]);
+const inventory = await invRes.json();
+const requests = await reqRes.json();
+const donations = await donRes.json();
+const donors = await donorsRes.json();
 
       const totalUnits = inventory.reduce((sum, b) => sum + b.units, 0);
       document.getElementById('statTotalUnits').textContent = totalUnits.toLocaleString();
@@ -1227,6 +1224,64 @@ async function recordDonation() {
       document.getElementById('monthlyChartTitle').textContent = startYear === endYear
         ? `Monthly Donations (${startYear})`
         : `Monthly Donations (${startYear}–${String(endYear).slice(2)})`;
+        const activities = [];
+
+      donors.forEach(d => {
+        activities.push({
+          type: 'donor', date: new Date(d.createdAt),
+          dot: 'green',
+          text: `${d.firstName} ${d.lastName} registered as new donor (${d.bloodType})`
+        });
+      });
+
+      donations.forEach(d => {
+        const donorName = d.donor ? `${d.donor.firstName} ${d.donor.lastName}` : 'A donor';
+        activities.push({
+          type: 'donation', date: new Date(d.createdAt),
+          dot: 'green',
+          text: `${donorName} donated ${d.units} unit${d.units === 1 ? '' : 's'} of ${d.bloodType} blood`
+        });
+      });
+
+      requests.forEach(r => {
+        activities.push({
+          type: 'request', date: new Date(r.createdAt),
+          dot: r.status === 'Fulfilled' ? 'blue' : 'red',
+          text: r.status === 'Fulfilled'
+            ? `Request #${r.requestId} fulfilled for ${r.hospitalName} (${r.bloodType})`
+            : `New request from ${r.hospitalName} for ${r.unitsRequired} units of ${r.bloodType}`
+        });
+      });
+
+      inventory.forEach(b => {
+        activities.push({
+          type: 'inventory', date: new Date(b.createdAt),
+          dot: 'blue',
+          text: `${b.units} units of ${b.bloodType} added to inventory (Batch ${b.batchId})`
+        });
+      });
+
+      activities.sort((a, b) => b.date - a.date);
+      const recentActivities = activities.slice(0, 6);
+
+      const activityContainer = document.getElementById('recentActivityContainer');
+      if (recentActivities.length === 0) {
+        activityContainer.innerHTML = '<div style="text-align:center;color:var(--gray-400);padding:20px">No recent activity yet.</div>';
+      } else {
+        activityContainer.innerHTML = recentActivities.map(a => {
+          const timeStr = a.date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' +
+            a.date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+          return `
+            <div class="activity-item">
+              <div class="activity-dot ${a.dot}"></div>
+              <div>
+                <div class="activity-text">${a.text}</div>
+                <div class="activity-time">${timeStr}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
     
 
