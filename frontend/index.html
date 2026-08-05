@@ -191,7 +191,29 @@
 </style>
 </head>
 <body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--cream)">
+  <div style="background:var(--white);border-radius:14px;padding:40px;width:380px;max-width:90vw;box-shadow:var(--shadow-lg)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div class="logo-icon" style="margin:0 auto 12px"><svg viewBox="0 0 24 24"><path d="M12 2C8.5 7 5 11.3 5 15a7 7 0 0014 0c0-3.7-3.5-8-7-13z"/></svg></div>
+      <div class="logo-text" style="font-size:24px">LifeLine</div>
+      <div style="color:var(--gray-400);font-size:14px;margin-top:4px">Blood Bank Management System</div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter username">
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password">
+    </div>
+    <div id="loginError" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="handleLogin()">Login</button>
+  </div>
+</div>
 
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
@@ -210,7 +232,7 @@
       <button class="nav-link" onclick="showPage('reports',this)">Reports</button>
     </div>
     <div class="nav-actions">
-      <span style="font-size:13px;color:var(--gray-400)">Admin: Dr. Sharma</span>
+      <span style="font-size:13px;color:var(--gray-400)" id="adminNameLabel">Admin: Dr. Sharma</span>
       <button class="btn btn-outline btn-sm" onclick="showModal('loginModal')">Logout</button>
     </div>
   </div>
@@ -715,7 +737,7 @@
     <div class="modal-body"><p style="font-size:15px;color:var(--gray-600)">Are you sure you want to logout from the LifeLine Blood Bank Management System?</p></div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeModal('loginModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="closeModal('loginModal');toast('Logged out successfully.')">Logout</button>
+      <button class="btn btn-primary" onclick="closeModal('loginModal');handleLogout()">Logout</button>
     </div>
   </div>
 </div>
@@ -725,9 +747,75 @@
 
 <script>
   const API_BASE = "https://blood-bank-9r0n.onrender.com";
+
+  function getToken() {
+    return sessionStorage.getItem('authToken');
+  }
+
+  function authHeaders() {
+    const token = getToken();
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+  }
+
+  async function handleLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.style.display = 'none';
+
+    if (!username || !password) {
+      errorEl.textContent = 'Please enter both username and password.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        errorEl.textContent = data.error || 'Login failed.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const data = await res.json();
+      sessionStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authName', data.name);
+      showMainApp();
+    } catch (err) {
+      console.error('Login failed:', err);
+      errorEl.textContent = 'Could not connect to server. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  }
+
+ function showMainApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    const name = sessionStorage.getItem('authName');
+    const adminLabel = document.getElementById('adminNameLabel');
+    if (adminLabel && name) adminLabel.textContent = 'Admin: ' + name;
+    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    loadDonors();
+    loadDashboardStats();
+  }
+  function handleLogout() {
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('authName');
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+  }
+
   async function loadDonors() {
   try {
-    const res = await fetch(`${API_BASE}/donors`);
+    const res = await fetch(`${API_BASE}/donors`, { headers: authHeaders() });
     const donors = await res.json();
 
 document.getElementById('statRegisteredDonors').textContent = donors.length.toLocaleString();
@@ -767,7 +855,7 @@ const tbody = document.getElementById('donorsTableBody');
 }
 async function loadInventory() {
   try {
-    const res = await fetch(`${API_BASE}/inventory`);
+    const res = await fetch(`${API_BASE}/inventory`, { headers: authHeaders() });
     const inventory = await res.json();
     const tbody = document.getElementById('inventoryTableBody');
     tbody.innerHTML = '';
@@ -800,7 +888,7 @@ async function loadInventory() {
 }
 async function loadRequests() {
   try {
-    const res = await fetch(`${API_BASE}/requests`);
+    const res = await fetch(`${API_BASE}/requests`, { headers: authHeaders() });
     const requests = await res.json();
     const tbody = document.getElementById('requestsTableBody');
     tbody.innerHTML = '';
@@ -838,7 +926,7 @@ async function loadRequests() {
 
 async function approveRequest(id) {
   try {
-    await fetch(`${API_BASE}/requests/${id}/approve`, { method: 'PATCH' });
+    await fetch(`${API_BASE}/requests/${id}/approve`, { method: 'PATCH', headers: authHeaders() });
     loadRequests();
     toast('Request approved!');
   } catch (err) {
@@ -847,7 +935,7 @@ async function approveRequest(id) {
 }
 async function loadDonations() {
   try {
-    const res = await fetch(`${API_BASE}/donations`);
+    const res = await fetch(`${API_BASE}/donations`, { headers: authHeaders() });
     const donations = await res.json();
     const tbody = document.getElementById('donationsTableBody');
     tbody.innerHTML = '';
@@ -904,7 +992,7 @@ async function loadDonations() {
   try {
     const res = await fetch(`${API_BASE}/donors`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         firstName, lastName, dob, gender, bloodType, phone,
         email: email || null,
@@ -954,7 +1042,7 @@ async function addInventory() {
   try {
     const res = await fetch(`${API_BASE}/inventory`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         bloodType,
         units,
@@ -1000,7 +1088,7 @@ async function submitRequest() {
   try {
     const res = await fetch(`${API_BASE}/requests`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         hospitalName, contactPerson, contactNumber, patientName,
         bloodType, unitsRequired, requiredByDate, priority,
@@ -1041,7 +1129,7 @@ async function recordDonation() {
 
   try {
     // Look up the donor's internal numeric ID from their public Donor ID (e.g. D-41285)
-    const donorsRes = await fetch(`${API_BASE}/donors`);
+   const donorsRes = await fetch(`${API_BASE}/donors`, { headers: authHeaders() });
     const donors = await donorsRes.json();
     const matchedDonor = donors.find(d => d.donorId.toLowerCase() === donorIdInput.toLowerCase());
 
@@ -1052,7 +1140,7 @@ async function recordDonation() {
 
     const res = await fetch(`${API_BASE}/donations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         donorId: matchedDonor.id,
         bloodType, units, donationDate, source, screeningResult,
@@ -1074,17 +1162,15 @@ async function recordDonation() {
   }
 }
 
-  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  loadDonors();
-  loadDashboardStats();
+  
 
   async function loadDashboardStats() {
     try {
-      const [invRes, reqRes, donRes, donorsRes] = await Promise.all([
-  fetch(`${API_BASE}/inventory`),
-  fetch(`${API_BASE}/requests`),
-  fetch(`${API_BASE}/donations`),
-  fetch(`${API_BASE}/donors`),
+     const [invRes, reqRes, donRes, donorsRes] = await Promise.all([
+  fetch(`${API_BASE}/inventory`, { headers: authHeaders() }),
+  fetch(`${API_BASE}/requests`, { headers: authHeaders() }),
+  fetch(`${API_BASE}/donations`, { headers: authHeaders() }),
+  fetch(`${API_BASE}/donors`, { headers: authHeaders() }),
 ]);
 const inventory = await invRes.json();
 const requests = await reqRes.json();
@@ -1325,5 +1411,6 @@ const donors = await donorsRes.json();
     setTimeout(() => t.style.display = 'none', 3500);
   }
 </script>
+</div>
 </body>
 </html>
