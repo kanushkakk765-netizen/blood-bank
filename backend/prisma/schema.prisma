@@ -74,3 +74,12 @@ model Donation {
 
   donor Donor @relation(fields: [donorId], references: [id])
 }
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}

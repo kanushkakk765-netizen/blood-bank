@@ -1,3 +1,6 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -10,13 +13,60 @@ const prisma = new PrismaClient({ adapter });
 
 app.use(cors());
 app.use(express.json());
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    req.user = user;
+    next();
+  });
+}
 
 app.get("/", (req, res) => {
   res.send("LifeLine Blood Bank API is running");
 });
+// LOGIN
+app.post("/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+    if (!passwordMatches) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+
+    res.json({ token, name: user.name, username: user.username });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
 
 // GET all donors
-app.get("/donors", async (req, res) => {
+app.get("/donors", authenticateToken, async (req, res) => {
   try {
     const donors = await prisma.donor.findMany({
       orderBy: { createdAt: "desc" },
@@ -29,7 +79,7 @@ app.get("/donors", async (req, res) => {
 });
 
 // POST a new donor (Register Donor)
-app.post("/donors", async (req, res) => {
+app.post("/donors", authenticateToken, async (req, res) => {
   try {
     const {
       firstName, lastName, dob, gender, bloodType,
@@ -64,7 +114,7 @@ app.post("/donors", async (req, res) => {
   }
 });
 // GET all inventory batches
-app.get("/inventory", async (req, res) => {
+app.get("/inventory", authenticateToken, async (req, res) => {
   try {
     const inventory = await prisma.bloodInventory.findMany({
       orderBy: { createdAt: "desc" },
@@ -77,7 +127,7 @@ app.get("/inventory", async (req, res) => {
 });
 
 // POST a new inventory batch (Add Units)
-app.post("/inventory", async (req, res) => {
+app.post("/inventory", authenticateToken, async (req, res) => {
   try {
     const {
       bloodType, units, collectionDate, expiryDate,
@@ -105,7 +155,7 @@ app.post("/inventory", async (req, res) => {
   }
 });
 // GET all blood requests
-app.get("/requests", async (req, res) => {
+app.get("/requests", authenticateToken, async (req, res) => {
   try {
     const requests = await prisma.bloodRequest.findMany({
       orderBy: { createdAt: "desc" },
@@ -118,7 +168,7 @@ app.get("/requests", async (req, res) => {
 });
 
 // POST a new blood request
-app.post("/requests", async (req, res) => {
+app.post("/requests", authenticateToken, async (req, res) => {
   try {
     const {
       hospitalName, contactPerson, contactNumber, patientName,
@@ -149,7 +199,7 @@ app.post("/requests", async (req, res) => {
 });
 
 // PATCH approve a request
-app.patch("/requests/:id/approve", async (req, res) => {
+app.patch("/requests/:id/approve", authenticateToken, async (req, res) => {
   try {
     const updated = await prisma.bloodRequest.update({
       where: { id: parseInt(req.params.id) },
@@ -163,7 +213,7 @@ app.patch("/requests/:id/approve", async (req, res) => {
 });
 
 // GET all donations
-app.get("/donations", async (req, res) => {
+app.get("/donations", authenticateToken, async (req, res) => {
   try {
     const donations = await prisma.donation.findMany({
       orderBy: { createdAt: "desc" },
@@ -177,7 +227,7 @@ app.get("/donations", async (req, res) => {
 });
 
 // POST a new donation
-app.post("/donations", async (req, res) => {
+app.post("/donations", authenticateToken, async (req, res) => {
   try {
     const {
       donorId, bloodType, units, donationDate,
