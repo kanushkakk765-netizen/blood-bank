@@ -230,6 +230,7 @@
       <button class="nav-link" onclick="showPage('requests',this)">Blood Requests</button>
       <button class="nav-link" onclick="showPage('donations',this)">Donations</button>
       <button class="nav-link" onclick="showPage('reports',this)">Reports</button>
+      <button class="nav-link" onclick="showPage('assistant',this)">AI Assistant</button>
     </div>
     <div class="nav-actions">
       <span style="font-size:13px;color:var(--gray-400)" id="adminNameLabel">Admin: Dr. Sharma</span>
@@ -564,6 +565,39 @@
     <button class="btn btn-primary" onclick="toast('Report generated! Downloading PDF...')">Generate Custom Report</button>
   </div>
 </div>
+<!-- =================== AI ASSISTANT =================== -->
+<div class="page" id="page-assistant">
+  <div class="page-title">AI Assistant</div>
+  <div class="page-sub">Ask questions about donors, inventory, requests, and donations in plain English</div>
+
+  <div class="card" style="margin-bottom:24px">
+    <div class="search-row" style="margin-bottom:0">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="assistantInput" placeholder="e.g. show me all O+ donors, how many A- units do we have..." onkeydown="if(event.key==='Enter')askAssistant()">
+      </div>
+      <button class="btn btn-primary" onclick="askAssistant()">Ask</button>
+    </div>
+  </div>
+
+  <div class="card" id="assistantResultCard" style="display:none">
+    <div class="card-title" id="assistantResultTitle">Results</div>
+    <div class="table-wrap">
+      <table>
+        <thead id="assistantTableHead"></thead>
+        <tbody id="assistantTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="assistantEmptyState">
+    <div class="empty-state">
+      <div class="empty-icon">🤖</div>
+      <h4>Ask me anything about your blood bank data</h4>
+      <div style="font-size:13px">Try: "show me all O+ donors" or "how many pending requests are there"</div>
+    </div>
+  </div>
+</div>
 
 <!-- =================== MODALS =================== -->
 
@@ -747,6 +781,7 @@
 
 <script>
   const API_BASE = "https://blood-bank-9r0n.onrender.com";
+  //const API_BASE = "http://localhost:5000";
 
   function getToken() {
     return sessionStorage.getItem('authToken');
@@ -1399,6 +1434,72 @@ const donors = await donorsRes.json();
     if (tabs) tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     if (el) el.classList.add('active');
   }
+  async function askAssistant() {
+  const question = document.getElementById('assistantInput').value.trim();
+  if (!question) {
+    toast('Please type a question first.');
+    return;
+  }
+
+  const resultCard = document.getElementById('assistantResultCard');
+  const emptyState = document.getElementById('assistantEmptyState');
+  const titleEl = document.getElementById('assistantResultTitle');
+  const theadEl = document.getElementById('assistantTableHead');
+  const tbodyEl = document.getElementById('assistantTableBody');
+
+  titleEl.textContent = 'Thinking...';
+  emptyState.style.display = 'none';
+  resultCard.style.display = 'block';
+  theadEl.innerHTML = '';
+  tbodyEl.innerHTML = '<tr><td style="text-align:center;color:var(--gray-400);padding:20px">Loading...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_BASE}/assistant/query`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ question }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      titleEl.textContent = 'Could not understand that question';
+      tbodyEl.innerHTML = `<tr><td style="text-align:center;color:var(--red);padding:20px">${data.error || 'Something went wrong.'}</td></tr>`;
+      return;
+    }
+
+    const { interpreted, result } = data;
+
+    // Count query — single number result
+    if (interpreted.action === 'count') {
+      titleEl.textContent = `Result: "${question}"`;
+      theadEl.innerHTML = '';
+      tbodyEl.innerHTML = `<tr><td style="text-align:center;font-size:24px;font-weight:600;padding:24px">${result.count}</td></tr>`;
+      return;
+    }
+
+    // List query — empty result
+    if (!result || result.length === 0) {
+      titleEl.textContent = `Result: "${question}"`;
+      theadEl.innerHTML = '';
+      tbodyEl.innerHTML = '<tr><td style="text-align:center;color:var(--gray-400);padding:20px">No matching records found.</td></tr>';
+      return;
+    }
+
+    // List query — build table dynamically from the first record's keys
+    titleEl.textContent = `Result: "${question}" (${result.length} found)`;
+    const columns = Object.keys(result[0]).filter(k => k !== 'donor');
+    theadEl.innerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+    tbodyEl.innerHTML = result.map(row =>
+      '<tr>' + columns.map(c => `<td>${row[c] ?? '—'}</td>`).join('') + '</tr>'
+    ).join('');
+
+  } catch (err) {
+    console.error('Assistant query failed:', err);
+    titleEl.textContent = 'Error';
+    tbodyEl.innerHTML = '<tr><td style="text-align:center;color:var(--red);padding:20px">Could not connect to server. Please try again.</td></tr>';
+  }
+}
 
   function showModal(id) { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }

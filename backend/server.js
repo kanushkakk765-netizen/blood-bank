@@ -6,10 +6,12 @@ const cors = require("cors");
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -256,6 +258,81 @@ app.post("/donations", authenticateToken, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+// AI ASSISTANT - Natural language query
+app.post("/assistant/query", authenticateToken, async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question) {
+      return res.status(400).json({ error: "Question is required" });
+    }
+
+    const systemPrompt = `You are a query interpreter for a blood bank management system. Convert natural language questions into a single JSON object — nothing else, no explanation, no markdown formatting, no backticks.
+
+Tables and fields:
+
+1. donor: firstName, lastName, dob, gender, bloodType (A+, A-, B+, B-, AB+, AB-, O+, O-), phone, email, address, city, state, weight, lastDonationDate, status, totalDonations
+
+2. bloodInventory: batchId, bloodType, units, collectionDate, expiryDate, source, storageLocation, status
+
+3. bloodRequest: requestId, hospitalName, contactPerson, contactNumber, patientName, bloodType, unitsRequired, requiredByDate, priority, status
+
+4. donation: donationId, donorId, bloodType, units, donationDate, source, screeningResult, status
+
+Respond ONLY with a JSON object in this exact shape:
+{
+  "table": "donor" | "bloodInventory" | "bloodRequest" | "donation",
+  "action": "list" | "count",
+  "filters": { "fieldName": "value" }
+}
+
+Rules:
+- Only use table and field names exactly as listed above.
+- Only include filters for fields that exist on the chosen table.
+- If the question is ambiguous or unrelated to this database, respond with:
+  { "error": "Cannot interpret this query" }
+- Never include any text outside the JSON object.
+
+User question: "${question}"`;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const result = await model.generateContent(systemPrompt);
+    let rawText = result.response.text().trim();
+
+    // Strip accidental markdown code fences if Gemini adds them
+    rawText = rawText.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch (parseErr) {
+      return res.status(500).json({ error: "Could not understand AI response", raw: rawText });
+    }
+
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    const allowedTables = ["donor", "bloodInventory", "bloodRequest", "donation"];
+    if (!allowedTables.includes(parsed.table)) {
+      return res.status(400).json({ error: "Invalid table requested" });
+    }
+
+    const filters = parsed.filters || {};
+    let data;
+
+    if (parsed.action === "count") {
+      const count = await prisma[parsed.table].count({ where: filters });
+      data = { count };
+    } else {
+      data = await prisma[parsed.table].findMany({ where: filters });
+    }
+
+    res.json({ interpreted: parsed, result: data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Assistant query failed" });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
