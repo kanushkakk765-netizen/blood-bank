@@ -325,54 +325,55 @@
   </div>
 
   <div class="tab-content active" id="tab-inv-inv-stock">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px">
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+    
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px" id="invStockGrid">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-A+">
         <div class="blood-type">A+</div>
-        <div class="blood-units">38</div>
-        <div class="blood-status" style="color:var(--red)">Critical — Min: 50</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-red" style="width:38%"></div></div>
+        <div class="blood-units" id="invUnits-A+">0</div>
+        <div class="blood-status" id="invStatus-A+">Available — Min: 50</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-A+" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-A-">
         <div class="blood-type">A−</div>
-        <div class="blood-units">72</div>
-        <div class="blood-status" style="color:var(--green)">Available — Min: 30</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-green" style="width:72%"></div></div>
+        <div class="blood-units" id="invUnits-A-">0</div>
+        <div class="blood-status" id="invStatus-A-">Available — Min: 30</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-A-" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-B+">
         <div class="blood-type">B+</div>
-        <div class="blood-units">55</div>
-        <div class="blood-status" style="color:var(--amber)">Low — Min: 50</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-amber" style="width:55%"></div></div>
+        <div class="blood-units" id="invUnits-B+">0</div>
+        <div class="blood-status" id="invStatus-B+">Available — Min: 50</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-B+" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-B-">
         <div class="blood-type">B−</div>
-        <div class="blood-units">90</div>
-        <div class="blood-status" style="color:var(--green)">Available — Min: 30</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-green" style="width:90%"></div></div>
+        <div class="blood-units" id="invUnits-B-">0</div>
+        <div class="blood-status" id="invStatus-B-">Available — Min: 30</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-B-" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-AB+">
         <div class="blood-type">AB+</div>
-        <div class="blood-units">110</div>
-        <div class="blood-status" style="color:var(--green)">Available — Min: 40</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-green" style="width:100%"></div></div>
+        <div class="blood-units" id="invUnits-AB+">0</div>
+        <div class="blood-status" id="invStatus-AB+">Available — Min: 40</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-AB+" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-AB-">
         <div class="blood-type">AB−</div>
-        <div class="blood-units">22</div>
-        <div class="blood-status" style="color:var(--red)">Critical — Min: 20</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-red" style="width:22%"></div></div>
+        <div class="blood-units" id="invUnits-AB-">0</div>
+        <div class="blood-status" id="invStatus-AB-">Available — Min: 20</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-AB-" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-O+">
         <div class="blood-type">O+</div>
-        <div class="blood-units">185</div>
-        <div class="blood-status" style="color:var(--green)">Available — Min: 60</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-green" style="width:100%"></div></div>
+        <div class="blood-units" id="invUnits-O+">0</div>
+        <div class="blood-status" id="invStatus-O+">Available — Min: 60</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-O+" style="width:0%"></div></div>
       </div>
-      <div class="blood-item ok" style="border:1px solid;padding:24px">
+      <div class="blood-item ok" style="border:1px solid;padding:24px" id="invCard-O-">
         <div class="blood-type">O−</div>
-        <div class="blood-units">18</div>
-        <div class="blood-status" style="color:var(--red)">Critical — Min: 40</div>
-        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill fill-red" style="width:18%"></div></div>
+        <div class="blood-units" id="invUnits-O-">0</div>
+        <div class="blood-status" id="invStatus-O-">Available — Min: 40</div>
+        <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" id="invFill-O-" style="width:0%"></div></div>
       </div>
     </div>
     <div class="card">
@@ -493,10 +494,10 @@
   </div>
 
   <div class="stats-grid" style="margin-bottom:24px">
-    <div class="stat-card green"><div class="stat-label">This Month</div><div class="stat-value">248</div><div class="stat-trend">Donations recorded</div></div>
-    <div class="stat-card red"><div class="stat-label">Total Units Collected</div><div class="stat-value">3,840</div><div class="stat-trend">Across all time</div></div>
-    <div class="stat-card blue"><div class="stat-label">Camps Held</div><div class="stat-value">44</div><div class="stat-trend">This financial year</div></div>
-    <div class="stat-card amber"><div class="stat-label">Rejected Donations</div><div class="stat-value">18</div><div class="stat-trend">Failed screening this month</div></div>
+    <div class="stat-card green"><div class="stat-label">This Month</div><div class="stat-value" id="donStatThisMonth">0</div><div class="stat-trend">Donations recorded</div></div>
+    <div class="stat-card red"><div class="stat-label">Total Units Collected</div><div class="stat-value" id="donStatTotalUnits">0</div><div class="stat-trend">Across all time</div></div>
+    <div class="stat-card blue"><div class="stat-label">Camps Held</div><div class="stat-value" id="donStatCamps">0</div><div class="stat-trend">This financial year</div></div>
+    <div class="stat-card amber"><div class="stat-label">Rejected Donations</div><div class="stat-value" id="donStatRejected">0</div><div class="stat-trend">Failed screening this month</div></div>
   </div>
 
   <div class="card">
@@ -892,6 +893,40 @@ async function loadInventory() {
   try {
     const res = await fetch(`${API_BASE}/inventory`, { headers: authHeaders() });
     const inventory = await res.json();
+    // Update Stock Levels cards with real data
+    const invThresholds = {
+      'A+': 50, 'A-': 30, 'B+': 50, 'B-': 30,
+      'AB+': 40, 'AB-': 20, 'O+': 60, 'O-': 40
+    };
+    const invStockByType = {};
+    Object.keys(invThresholds).forEach(type => invStockByType[type] = 0);
+    inventory.forEach(b => {
+      if (invStockByType.hasOwnProperty(b.bloodType)) {
+        invStockByType[b.bloodType] += b.units;
+      }
+    });
+    Object.keys(invThresholds).forEach(type => {
+      const units = invStockByType[type];
+      const min = invThresholds[type];
+      let status, color, fillClass;
+
+      if (units < min * 0.5) {
+        status = `Critical — Min: ${min}`; color = 'var(--red)'; fillClass = 'fill-red';
+      } else if (units < min) {
+        status = `Low — Min: ${min}`; color = 'var(--amber)'; fillClass = 'fill-amber';
+      } else {
+        status = `Available — Min: ${min}`; color = 'var(--green)'; fillClass = 'fill-green';
+      }
+
+      const pct = Math.min(Math.round((units / min) * 100), 100);
+      const unitsEl = document.getElementById(`invUnits-${type}`);
+      const statusEl = document.getElementById(`invStatus-${type}`);
+      const fillEl = document.getElementById(`invFill-${type}`);
+
+      if (unitsEl) unitsEl.textContent = units;
+      if (statusEl) { statusEl.textContent = status; statusEl.style.color = color; }
+      if (fillEl) { fillEl.className = 'progress-fill ' + fillClass; fillEl.style.width = pct + '%'; }
+    });
     const tbody = document.getElementById('inventoryTableBody');
     tbody.innerHTML = '';
 
@@ -972,6 +1007,20 @@ async function loadDonations() {
   try {
     const res = await fetch(`${API_BASE}/donations`, { headers: authHeaders() });
     const donations = await res.json();
+    // Update Donations stat cards with real data
+    const now = new Date();
+    const thisMonthDonations = donations.filter(d => {
+      const dDate = new Date(d.donationDate);
+      return dDate.getMonth() === now.getMonth() && dDate.getFullYear() === now.getFullYear();
+    });
+    const totalUnits = donations.reduce((sum, d) => sum + d.units, 0);
+    const campsHeld = donations.filter(d => d.source && d.source.toLowerCase().includes('camp')).length;
+    const rejectedThisMonth = thisMonthDonations.filter(d => d.screeningResult === 'Failed').length;
+
+    document.getElementById('donStatThisMonth').textContent = thisMonthDonations.length.toLocaleString();
+    document.getElementById('donStatTotalUnits').textContent = totalUnits.toLocaleString();
+    document.getElementById('donStatCamps').textContent = campsHeld.toLocaleString();
+    document.getElementById('donStatRejected').textContent = rejectedThisMonth.toLocaleString();
     const tbody = document.getElementById('donationsTableBody');
     tbody.innerHTML = '';
 
