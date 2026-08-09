@@ -387,17 +387,13 @@
     </div>
   </div>
 
-  <div class="tab-content" id="tab-inv-inv-expiry">
+ <div class="tab-content" id="tab-inv-inv-expiry">
     <div class="card">
       <div class="card-title">Expiry Tracking</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Batch ID</th><th>Blood Type</th><th>Units</th><th>Expiry Date</th><th>Days Left</th><th>Action Required</th></tr></thead>
-          <tbody>
-            <tr><td>BT-20240182</td><td><span class="badge badge-red">A+</span></td><td>15</td><td>24 Apr 2026</td><td><span style="color:var(--red);font-weight:600">5 days</span></td><td><button class="btn btn-primary btn-sm">Dispatch Now</button></td></tr>
-            <tr><td>BT-20240160</td><td><span class="badge badge-red">B−</span></td><td>8</td><td>28 Apr 2026</td><td><span style="color:var(--amber);font-weight:600">9 days</span></td><td><button class="btn btn-primary btn-sm">Schedule Dispatch</button></td></tr>
-            <tr><td>BT-20240155</td><td><span class="badge badge-red">A−</span></td><td>20</td><td>05 May 2026</td><td><span style="color:var(--amber);font-weight:600">16 days</span></td><td><button class="btn btn-gray btn-sm">Monitor</button></td></tr>
-          </tbody>
+          <thead><tr><th>Batch ID</th><th>Blood Type</th><th>Units</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+          <tbody id="expiryTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -917,6 +913,35 @@ async function loadInventory() {
       if (statusEl) { statusEl.textContent = status; statusEl.style.color = color; }
       if (fillEl) { fillEl.className = 'progress-fill ' + fillClass; fillEl.style.width = pct + '%'; }
     });
+    // Update Expiry Tracking table with real data
+    const expiryBody = document.getElementById('expiryTableBody');
+    if (expiryBody) {
+      const now2 = new Date();
+      const expiringBatches = inventory
+        .map(b => {
+          const expiry = new Date(b.expiryDate);
+          const daysLeft = Math.ceil((expiry - now2) / (1000 * 60 * 60 * 24));
+          return { ...b, daysLeft };
+        })
+        .filter(b => b.daysLeft >= 0 && b.daysLeft <= 30)
+        .sort((a, b) => a.daysLeft - b.daysLeft);
+
+      if (expiringBatches.length === 0) {
+        expiryBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:20px">No batches expiring within 30 days.</td></tr>';
+      } else {
+        expiryBody.innerHTML = expiringBatches.map(b => {
+          const expiryStr = new Date(b.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          const daysColor = b.daysLeft <= 5 ? 'var(--red)' : 'var(--amber)';
+          return `<tr>
+            <td>${b.batchId}</td>
+            <td><span class="badge badge-red">${b.bloodType}</span></td>
+            <td>${b.units}</td>
+            <td>${expiryStr}</td>
+            <td><span style="color:${daysColor};font-weight:600">${b.daysLeft} day${b.daysLeft === 1 ? '' : 's'}</span></td>
+          </tr>`;
+        }).join('');
+      }
+    }
     const tbody = document.getElementById('inventoryTableBody');
     tbody.innerHTML = '';
 
