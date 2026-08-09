@@ -431,10 +431,10 @@
   <div class="search-row">
     <div class="search-input-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search donors by name, blood type, phone, or ID...">
+      <input type="text" id="donorSearchInput" placeholder="Search donors by name, blood type, phone, or ID..." oninput="filterDonors()">
     </div>
-    <select style="width:160px"><option>All Blood Types</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select>
-    <select style="width:140px"><option>All Status</option><option>Active</option><option>Inactive</option><option>Deferred</option></select>
+    <select style="width:160px" id="donorBloodTypeFilter" onchange="filterDonors()"><option value="">All Blood Types</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+    <select style="width:140px" id="donorStatusFilter" onchange="filterDonors()"><option value="">All Status</option><option>Active</option><option>Inactive</option><option>Deferred</option></select>
     <button class="btn btn-primary" onclick="showModal('addDonorModal')">+ Register Donor</button>
   </div>
 
@@ -730,6 +730,7 @@
 <script>
   const API_BASE = "https://blood-bank-9r0n.onrender.com";
   //const API_BASE = "http://localhost:5000";
+  let allDonors = [];
 
   function getToken() {
     return sessionStorage.getItem('authToken');
@@ -800,6 +801,7 @@
   try {
     const res = await fetch(`${API_BASE}/donors`, { headers: authHeaders() });
     const donors = await res.json();
+    allDonors = donors;
 
 document.getElementById('statRegisteredDonors').textContent = donors.length.toLocaleString();
 document.getElementById('donorsTotalCount').textContent = donors.length.toLocaleString();
@@ -835,6 +837,54 @@ const tbody = document.getElementById('donorsTableBody');
   } catch (err) {
     console.error('Failed to load donors:', err);
   }
+}
+function filterDonors() {
+  const searchText = document.getElementById('donorSearchInput').value.trim().toLowerCase();
+  const bloodTypeFilter = document.getElementById('donorBloodTypeFilter').value;
+  const statusFilter = document.getElementById('donorStatusFilter').value;
+
+  const filtered = allDonors.filter(d => {
+    const matchesSearch = !searchText ||
+      d.firstName.toLowerCase().includes(searchText) ||
+      d.lastName.toLowerCase().includes(searchText) ||
+      d.donorId.toLowerCase().includes(searchText) ||
+      d.phone.includes(searchText) ||
+      d.bloodType.toLowerCase().includes(searchText);
+
+    const matchesBloodType = !bloodTypeFilter || d.bloodType === bloodTypeFilter;
+    const matchesStatus = !statusFilter || d.status === statusFilter;
+
+    return matchesSearch && matchesBloodType && matchesStatus;
+  });
+
+  const tbody = document.getElementById('donorsTableBody');
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:20px">No donors match your search.</td></tr>';
+    return;
+  }
+
+  filtered.forEach(d => {
+    const age = new Date().getFullYear() - new Date(d.dob).getFullYear();
+    const lastDonated = d.lastDonationDate
+      ? new Date(d.lastDonationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '—';
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${d.donorId}</td>
+      <td><strong>${d.firstName} ${d.lastName}</strong></td>
+      <td>${age} / ${d.gender.charAt(0)}</td>
+      <td><span class="badge badge-red">${d.bloodType}</span></td>
+      <td>${d.phone}</td>
+      <td>${lastDonated}</td>
+      <td>${d.totalDonations}</td>
+      <td><span class="badge badge-green">${d.status}</span></td>
+      <td><button class="btn btn-sm btn-gray">View</button></td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 async function loadInventory() {
   try {
