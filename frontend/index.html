@@ -737,25 +737,15 @@
         <div class="report-logo"><svg viewBox="0 0 24 24"><path d="M12 2C8.5 7 5 11.3 5 15a7 7 0 0014 0c0-3.7-3.5-8-7-13z"/></svg></div>
         <div>
           <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--red-dark)">LifeLine Blood Bank</div>
-          <div style="color:var(--gray-400);font-size:13px">City Medical Center, Moradabad | Report Date: 19 April 2026</div>
+          <div style="color:var(--gray-400);font-size:13px">City Medical Center, Moradabad | Report Date: <span id="reportDate"></span></div>
         </div>
       </div>
       <div style="font-weight:600;margin-bottom:12px">Blood Stock Summary</div>
       <table style="font-size:14px">
-        <thead><tr><th>Blood Type</th><th>Units Available</th><th>Min. Required</th><th>Status</th><th>Last Updated</th></tr></thead>
-        <tbody>
-          <tr><td>A+</td><td>38</td><td>50</td><td><span class="badge badge-red">Critical</span></td><td>19 Apr 2026</td></tr>
-          <tr><td>A−</td><td>72</td><td>30</td><td><span class="badge badge-green">Available</span></td><td>19 Apr 2026</td></tr>
-          <tr><td>B+</td><td>55</td><td>50</td><td><span class="badge badge-amber">Low</span></td><td>18 Apr 2026</td></tr>
-          <tr><td>B−</td><td>90</td><td>30</td><td><span class="badge badge-green">Available</span></td><td>19 Apr 2026</td></tr>
-          <tr><td>AB+</td><td>110</td><td>40</td><td><span class="badge badge-green">Available</span></td><td>17 Apr 2026</td></tr>
-          <tr><td>AB−</td><td>22</td><td>20</td><td><span class="badge badge-red">Critical</span></td><td>19 Apr 2026</td></tr>
-          <tr><td>O+</td><td>185</td><td>60</td><td><span class="badge badge-green">Available</span></td><td>19 Apr 2026</td></tr>
-          <tr><td>O−</td><td>18</td><td>40</td><td><span class="badge badge-red">Critical</span></td><td>19 Apr 2026</td></tr>
-        </tbody>
+        <thead><tr><th>Blood Type</th><th>Units Available</th><th>Min. Required</th><th>Status</th></tr></thead>
+        <tbody id="reportStockTableBody"></tbody>
       </table>
-      <div style="margin-top:16px;padding:12px;background:var(--red-bg);border-radius:8px;font-size:13px;color:var(--red-dark)">
-        ⚠️ 3 blood types (A+, AB−, O−) are critically low. Immediate action recommended.
+      <div style="margin-top:16px;padding:12px;background:var(--red-bg);border-radius:8px;font-size:13px;color:var(--red-dark)" id="reportCriticalWarning">
       </div>
     </div>
     <div class="modal-footer">
@@ -1550,7 +1540,65 @@ const donors = await donorsRes.json();
   }
 }
 
-  function showModal(id) { document.getElementById(id).classList.add('open'); }
+  async function showModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'reportPreviewModal') {
+    await loadStockReport();
+  }
+}
+
+async function loadStockReport() {
+  const tbody = document.getElementById('reportStockTableBody');
+  const warningEl = document.getElementById('reportCriticalWarning');
+  const dateEl = document.getElementById('reportDate');
+
+  dateEl.textContent = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:20px">Loading...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_BASE}/inventory`, { headers: authHeaders() });
+    const inventory = await res.json();
+
+    const thresholds = {
+      'A+': 50, 'A-': 30, 'B+': 50, 'B-': 30,
+      'AB+': 40, 'AB-': 20, 'O+': 60, 'O-': 40
+    };
+    const stockByType = {};
+    Object.keys(thresholds).forEach(type => stockByType[type] = 0);
+    inventory.forEach(b => {
+      if (stockByType.hasOwnProperty(b.bloodType)) {
+        stockByType[b.bloodType] += b.units;
+      }
+    });
+
+    const criticalTypes = [];
+    tbody.innerHTML = Object.keys(thresholds).map(type => {
+      const units = stockByType[type];
+      const min = thresholds[type];
+      let status, badgeClass;
+
+      if (units < min * 0.5) {
+        status = 'Critical'; badgeClass = 'badge-red'; criticalTypes.push(type);
+      } else if (units < min) {
+        status = 'Low'; badgeClass = 'badge-amber';
+      } else {
+        status = 'Available'; badgeClass = 'badge-green';
+      }
+
+      return `<tr><td>${type}</td><td>${units}</td><td>${min}</td><td><span class="badge ${badgeClass}">${status}</span></td></tr>`;
+    }).join('');
+
+    if (criticalTypes.length > 0) {
+      warningEl.style.display = 'block';
+      warningEl.innerHTML = `⚠️ ${criticalTypes.length} blood type${criticalTypes.length === 1 ? '' : 's'} (${criticalTypes.join(', ')}) ${criticalTypes.length === 1 ? 'is' : 'are'} critically low. Immediate action recommended.`;
+    } else {
+      warningEl.style.display = 'none';
+    }
+  } catch (err) {
+    console.error('Failed to load stock report:', err);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red);padding:20px">Failed to load inventory data.</td></tr>';
+  }
+}
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
 
